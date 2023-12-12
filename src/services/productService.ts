@@ -10,11 +10,11 @@ export const findAllProducts = async (request: Request) => {
   let page = Number(request.query.page) || 1
   const search = (request.query.search as string) || ''
   const { rangeId } = request.query || { $gte: 0 }
-  //sort 
-  const sortName  = String(request.query.sortName) || 'price'
-  let sortOption: Record<string, any>= {}
-  let sortNum =request.query.sortNum || 1
-  const skipField = {__v: 0, updateAt: 0}
+  //sort
+  const sortName = String(request.query.sortName) || 'price'
+  let sortOption: Record<string, any> = {}
+  let sortNum = request.query.sortNum || 1
+  const skipField = { __v: 0, updateAt: 0 }
 
   let priceFilter = { $gte: 0, $lte: Number.MAX_SAFE_INTEGER }
 
@@ -56,8 +56,8 @@ export const findAllProducts = async (request: Request) => {
 
   //sort http://localhost:5050/products?sortName=name&sortNum=1
   //http://localhost:5050/products?sortName=createAt&sortNum=1
-  sortNum?  -1 :1
-  sortOption[sortName]=   sortNum;
+  sortNum ? -1 : 1
+  sortOption[sortName] = sortNum
   //how many have products
   const countPage = await Product.countDocuments()
 
@@ -69,21 +69,19 @@ export const findAllProducts = async (request: Request) => {
   const skip = (page - 1) * limit
 
   // return results
-  const allProductOnPage: IProduct[] = await Product.find({
-    $and: [searchFilter, { price: priceFilter }],
-  },skipField)
+  const allProducts: IProduct[] = await Product.find(
+    {
+      $and: [searchFilter, { price: priceFilter }],
+    },
+    skipField
+  )
     .populate('categories')
     .skip(skip)
     .limit(limit)
-     .sort(sortOption) 
- 
+    .sort(sortOption)
 
-  
-  if (allProductOnPage.length === 0 ) {
-    throw ApiError.badRequest(404, 'No matching results')
-  }
   return {
-    allProductOnPage,
+    allProducts,
     totalPage,
     currentPage: page,
   }
@@ -100,7 +98,7 @@ export const findProductById = async (id: string, next: NextFunction) => {
 export const findAndDeletedProduct = async (id: string, next: NextFunction) => {
   const deleteSingleProduct = await Product.findOneAndDelete({ _id: id })
   //delete file from server
-  if(deleteSingleProduct && deleteSingleProduct.image){
+  if (deleteSingleProduct && deleteSingleProduct.image) {
     await deleteImage(deleteSingleProduct.image)
   }
   if (!deleteSingleProduct) {
@@ -111,7 +109,7 @@ export const findAndDeletedProduct = async (id: string, next: NextFunction) => {
 //check entered product is exist on DB or not when a create new product
 export const findIfProductExist = async (newInput: IProduct, next: NextFunction) => {
   const nameInput = newInput.name
-  console.log("nameInput: ",nameInput);
+  console.log('nameInput: ', nameInput)
   const productExist = await Product.exists({ name: nameInput })
   if (productExist) {
     throw ApiError.badRequest(409, `Product already exist with this Name: ${nameInput}`)
@@ -120,7 +118,12 @@ export const findIfProductExist = async (newInput: IProduct, next: NextFunction)
 }
 
 // find and update product by id
-export const findAndUpdateProduct = async (id: string,request: Request, next: NextFunction, updatedProduct: Request) => {
+export const findAndUpdateProduct = async (
+  id: string,
+  request: Request,
+  next: NextFunction,
+  updatedProduct: Request
+) => {
   const productUpdated = await Product.findByIdAndUpdate(id, updatedProduct, {
     new: true,
     runValidators: true,

@@ -9,13 +9,19 @@ import * as services from '../services/productService'
 // get all products
 export const getAllProducts = async (request: Request, response: Response, next: NextFunction) => {
   try {
-    const products = await services.findAllProducts(request)
+    const { allProducts, totalPage, currentPage } = await services.findAllProducts(request)
 
-    response.status(200).json({
-      message: `Return all products `,
-      payload: {
-        products,
-      },
+    if (allProducts.length) {
+      response.status(200).json({
+        message: `Return all products `,
+        allProducts,
+        totalPage,
+        currentPage,
+      })
+    }
+
+    return response.status(200).json({
+      message: 'there are no matching results',
     })
   } catch (error) {
     next(error)
@@ -34,7 +40,7 @@ export const getSingleProduct = async (
 
     response.status(200).json({
       message: `Return a single product `,
-      payload: singleProduct,
+      product: singleProduct,
     })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
@@ -90,11 +96,10 @@ export const createProduct = async (request: Request, response: Response, next: 
 
     if (imagePath) {
       newProduct.image = imagePath
-      console.log('Add Image');
-    }else if(!imagePath){
-      console.log('No Image Yet!');
-          next()   
-
+      console.log('Add Image')
+    } else if (!imagePath) {
+      console.log('No Image Yet!')
+      next()
     }
 
     if (newProduct) {
@@ -139,10 +144,8 @@ export const updateProduct = async (request: Request, response: Response, next: 
         } catch (error) {
           throw ApiError.badRequest(400, `Error deleting file:${error}`)
         }
-
-      } 
-      else if(!productImage){
-             next()
+      } else if (!productImage) {
+        next()
       }
     }
     const productUpdated = await services.findAndUpdateProduct(id, request, next, updatedProduct)

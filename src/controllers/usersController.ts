@@ -80,7 +80,7 @@ export const registUser = async (request: Request, response: Response, next: Nex
     }
 
     await services.findIfUserEmailExist(email)
-    const token = generateToken(registedUser, dev.app.jwtUserActivationKey, '2m')
+    const token: string = generateToken(registedUser, dev.app.jwtUserActivationKey, '2m')
 
     // prepare and send email to verify user
     const emailData = {
@@ -88,7 +88,7 @@ export const registUser = async (request: Request, response: Response, next: Nex
       subject: 'Activate your account',
       html: ` 
     <h1> Hello</h1>
-    <p>Please activate your account by <a href= "http://127.0.0.1:5050/users/activate/${token}">click here</a></p>`,
+    <p>Please activate your account by <a href= "http://localhost:3000/users/activate/${token}">click here</a></p>`,
     }
     sendEmail(emailData)
 
