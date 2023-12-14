@@ -22,7 +22,12 @@ mongoose.set('strictQuery', false)
 mongoose.set('strictPopulate', false)
 const URL = process.env.ATLAS_URL || 'mongodb://127.0.0.1:27017/full-stack-demo-db'
 
-app.use(cors())
+app.use(
+  cors({
+    origin: `http://localhost:3000`,
+    credentials: true,
+  })
+)
 app.use(myLogger)
 app.use(cookieParser())
 app.use(express.json())

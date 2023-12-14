@@ -88,7 +88,7 @@ export const registUser = async (request: Request, response: Response, next: Nex
       subject: 'Activate your account',
       html: ` 
     <h1> Hello</h1>
-    <p>Please activate your account by <a href= "http://localhost:3000/users/activate/${token}">click here</a></p>`,
+    <p>Please activate your account by <a href= "http://localhost:3000/users/activate?token=${token}">click here</a></p>`,
     }
     sendEmail(emailData)
 
@@ -123,8 +123,11 @@ export const updateUser = async (
     const { email } = request.body
     const updatedUser = request.body
 
-    if (updatedUser.isBanned || updatedUser.isAdmin) {
-      throw ApiError.badRequest(403, 'you do not have permission to ban users or modify thier role')
+    if (updatedUser.isBanned || updatedUser.isAdmin || updatedUser.password) {
+      throw ApiError.badRequest(
+        403,
+        'you do not have permission to ban users or modify thier role and password'
+      )
     }
 
     await services.findIfUserEmailExist(email, id)

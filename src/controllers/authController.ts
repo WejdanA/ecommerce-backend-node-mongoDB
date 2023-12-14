@@ -17,7 +17,9 @@ export const login = async (request: Request, response: Response, next: NextFunc
     const accessToken = generateToken({ _id: user.id }, dev.app.jwtAccessKey, '15m')
     setCookieResponse(response, accessToken)
 
-    response.status(200).json({ message: `you logged in ${user.isAdmin ? 'as an Admin' : ''}` })
+    response
+      .status(200)
+      .json({ message: `you logged in ${user.isAdmin ? 'as an Admin' : ''}`, user })
   } catch (error) {
     next(error)
   }

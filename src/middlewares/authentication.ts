@@ -17,6 +17,9 @@ export const isLoggedIn = async (
 ) => {
   try {
     const accessToken = request.cookies.access_token
+
+    console.log('cookies', request.cookies.access_token)
+
     if (!accessToken) {
       throw ApiError.badRequest(401, 'You are not logged in')
     }
@@ -60,7 +63,6 @@ export const isAdmin = async (request: CustomeRequest, response: Response, next:
   }
 }
 
-
 // check if admin
 export const isNotAdmin = async (
   request: CustomeRequest,
@@ -78,4 +80,3 @@ export const isNotAdmin = async (
     next(error)
   }
 }
-
