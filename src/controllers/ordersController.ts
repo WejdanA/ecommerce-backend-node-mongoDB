@@ -20,11 +20,11 @@ export const getOrdersForAdmin = async (
     const page = Number(request.query.page) || 1
 
     // return all orders with pagenation feature
-    const allOrdersOnPage = await services.findAllOrdersForAdmin(page, limit, next)
+    const allOrders = await services.findAllOrdersForAdmin(page, limit, next)
 
     response.status(200).send({
       message: `Return all orders for the admin`,
-      payload: allOrdersOnPage,
+      allOrders,
     })
   } catch (error) {
     next(error)
@@ -39,6 +39,7 @@ export const handleProcessPayment = async (
 ) => {
   try {
     const { products, payment } = request.body
+    console.log('products', products, 'payment', payment)
 
     let totalProductPrice: number = 0
     let subtotalSums: number[] = []

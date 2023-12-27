@@ -28,8 +28,9 @@ export const findAllUsers = async (
   const bannedUsersFilter = isBanned ? { isBanned: isBanned } : {}
 
   const filters = { $and: [roleFilter, bannedUsersFilter, searchFilter] }
-  const countPage = await User.countDocuments()
-  const totalPage = limit ? Math.ceil(countPage / limit) : 1
+
+  const countPage = await User.countDocuments(filters)
+  const totalPage = (limit ? Math.ceil(countPage / limit) : 1) | 1
   if (page > totalPage) {
     page = totalPage
   }
@@ -50,9 +51,7 @@ export const findAllUsers = async (
 }
 // find order by user id
 export const findSingleUser = async (filter: object): Promise<IUser> => {
-  const user = await User.findOne(filter, {
-    password: 0,
-  })
+  const user = await User.findOne(filter, {})
 
   if (!user) {
     throw ApiError.badRequest(404, `User was not found`)

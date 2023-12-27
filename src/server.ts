@@ -24,10 +24,11 @@ const URL = process.env.ATLAS_URL || 'mongodb://127.0.0.1:27017/full-stack-demo-
 
 app.use(
   cors({
-    origin: `http://localhost:3000`,
+    origin: [`http://localhost:3000`, `http://localhost:5050]`],
     credentials: true,
   })
 )
+app.use('*/images', express.static('public/images'))
 app.use(myLogger)
 app.use(cookieParser())
 app.use(express.json())

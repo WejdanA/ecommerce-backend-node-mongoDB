@@ -35,13 +35,14 @@ export const getAllUsers = async (request: Request, response: Response, next: Ne
       return response.status(200).json({
         message: 'users were found',
         allUsers,
-        totalPage,
-        currentPage,
+        pagination: { totalPage, currentPage },
       })
     }
 
     return response.status(200).json({
       message: 'there are no matching results',
+      allUsers,
+      pagination: { totalPage, currentPage },
     })
   } catch (error) {
     next(error)
@@ -57,7 +58,7 @@ export const getSingleUser = async (
   try {
     const id = request.userId
 
-    const user = await services.findSingleUser({ _id: id })
+    const { password, ...user } = await services.findSingleUser({ _id: id })
 
     response.status(200).json({ message: 'User was found', user })
   } catch (error) {
@@ -133,7 +134,9 @@ export const updateUser = async (
     await services.findIfUserEmailExist(email, id)
     const user = await services.findUserAndUpdate({ _id: id }, updatedUser)
 
-    response.status(200).json({ message: `User with id: ${user.id} was updated` })
+    response
+      .status(200)
+      .json({ message: `User with id: ${user.id} was updated`, _id: user.id, user })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
       next(ApiError.badRequest(400, `ID format is Invalid must be 24 characters`))
@@ -150,7 +153,7 @@ export const banUser = async (request: Request, response: Response, next: NextFu
 
     const user = await services.updateBanStatusById(id, true)
 
-    response.status(200).json({ message: `User with id: ${user.id} was banned` })
+    response.status(200).json({ message: `User with id: ${user.id} was banned`, _id: user.id })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
       next(ApiError.badRequest(400, `ID format is Invalid must be 24 characters`))
@@ -167,7 +170,7 @@ export const unBanUser = async (request: Request, response: Response, next: Next
 
     const user = await services.updateBanStatusById(id, false)
 
-    response.status(200).json({ message: `User with id: ${user.id} was Unbanned` })
+    response.status(200).json({ message: `User with id: ${user.id} was Unbanned`, _id: user.id })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
       next(ApiError.badRequest(400, `ID format is Invalid must be 24 characters`))
@@ -184,7 +187,7 @@ export const upgradeUserRole = async (request: Request, response: Response, next
 
     const user = await services.updateUserRoleById(id, true)
 
-    response.status(200).json({ message: 'admin permession was granted' })
+    response.status(200).json({ message: 'admin permession was granted', _id: user.id })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
       next(ApiError.badRequest(400, `ID format is Invalid must be 24 characters`))
@@ -205,7 +208,7 @@ export const downgradeUserRole = async (
 
     const user = await services.updateUserRoleById(id, false)
 
-    response.status(200).json({ message: 'admin permession was removed' })
+    response.status(200).json({ message: 'admin permession was removed', _id: user.id })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
       next(ApiError.badRequest(400, `ID format is Invalid must be 24 characters`))
@@ -222,7 +225,7 @@ export const deleteUser = async (request: Request, response: Response, next: Nex
 
     const user = await services.findAndDeleteUser(id)
 
-    response.status(204).json({ message: `User with id: ${id} deleted` })
+    response.status(200).json({ message: `User with id: ${id} deleted`, _id: id })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
       next(ApiError.badRequest(400, 'ID format is Invalid must be 24 characters'))
@@ -246,7 +249,7 @@ export const forgetPassword = async (request: Request, response: Response, next:
       subject: 'Reset The password',
       html: ` 
     <h1> Hello${user.firstName}</h1>
-    <p>Please reset the password by <a href= "http://127.0.0.1:8080/users/reset/${token}">click here</a></p>`,
+    <p>Please reset the password by <a href= "http://localhost:3000/reset-password?token=${token}">click here</a></p>`,
     }
     sendEmail(emailData)
 

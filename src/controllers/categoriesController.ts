@@ -16,7 +16,7 @@ export const getAllCategories = async (
     const page = Number(request.query.page) || 1
     const search = (request.query.search as string) || ''
 
-    const { allCategoriesOnPage, totalPage, currentPage } = await services.findAllCategories(
+    const { allCategories, totalPage, currentPage } = await services.findAllCategories(
       page,
       limit,
       search
@@ -24,11 +24,10 @@ export const getAllCategories = async (
 
     response.status(200).json({
       message: `All categories are returned `,
-      payload: {
-        allCategoriesOnPage,
-        totalPage,
-        currentPage,
-      },
+
+      allCategories,
+      totalPage,
+      currentPage,
     })
   } catch (error) {
     next(error)
@@ -48,7 +47,7 @@ export const getSingleCategory = async (
 
     response.status(200).json({
       message: `Single category is returned `,
-      payload: category,
+      category,
     })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
@@ -68,6 +67,7 @@ export const deleteCategory = async (request: Request, response: Response, next:
 
     response.status(200).json({
       message: `Category with ID: ${id} is deleted`,
+      _id: id,
     })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
@@ -85,13 +85,14 @@ export const createCategory = async (request: Request, response: Response, next:
 
     const category = await services.findIfCategoryExist(newInput, next)
 
-    const newProduct: ICategory = new Category({
+    const newCategory: ICategory = new Category({
       name: newInput.name,
     })
-    await newProduct.save()
+    await newCategory.save()
 
     response.status(201).json({
       message: `New category is created`,
+      category: newCategory,
     })
   } catch (error) {
     next(error)
@@ -102,13 +103,13 @@ export const createCategory = async (request: Request, response: Response, next:
 export const updateCategory = async (request: Request, response: Response, next: NextFunction) => {
   try {
     const { id } = request.params
-    const updatedCategory = request.body
+    const category = request.body
 
-    const category = await services.findAndUpdateCategory(id, next, updatedCategory)
+    const updatedCategory = await services.findAndUpdateCategory(id, next, category)
 
     response.status(200).json({
       message: `Category with ID: ${id} is updated`,
-      payload: category,
+      updatedCategory,
     })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {

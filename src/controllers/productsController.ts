@@ -9,19 +9,20 @@ import * as services from '../services/productService'
 // get all products
 export const getAllProducts = async (request: Request, response: Response, next: NextFunction) => {
   try {
-    const { allProducts, totalPage, currentPage } = await services.findAllProducts(request)
+    const { allProducts, totalPages, currentPage } = await services.findAllProducts(request)
 
     if (allProducts.length) {
       response.status(200).json({
         message: `Return all products `,
         allProducts,
-        totalPage,
-        currentPage,
+        pagination: { totalPages, currentPage },
       })
     }
 
     return response.status(200).json({
       message: 'there are no matching results',
+      allProducts,
+      pagination: { totalPages, currentPage },
     })
   } catch (error) {
     next(error)
@@ -59,6 +60,7 @@ export const deleteProduct = async (request: Request, response: Response, next: 
 
     response.status(200).json({
       message: `Delete a single product with ID: ${id}`,
+      _id: id,
     })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
@@ -82,6 +84,7 @@ export const createProduct = async (request: Request, response: Response, next: 
   try {
     const newInput = request.body
     const imagePath = request.file?.path
+    console.log('imagePath', imagePath)
 
     const productExist = await services.findIfProductExist(newInput, next)
 
@@ -98,8 +101,7 @@ export const createProduct = async (request: Request, response: Response, next: 
       newProduct.image = imagePath
       console.log('Add Image')
     } else if (!imagePath) {
-      console.log('No Image Yet!')
-      next()
+      throw ApiError.badRequest(400, `image path is not found`)
     }
 
     if (newProduct) {
@@ -110,6 +112,7 @@ export const createProduct = async (request: Request, response: Response, next: 
 
     response.status(201).json({
       message: `Create a single product`,
+      product: newProduct,
     })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
@@ -152,7 +155,7 @@ export const updateProduct = async (request: Request, response: Response, next: 
 
     response.status(200).json({
       message: `Update a single product`,
-      payload: productUpdated,
+      updatedProduct: productUpdated,
     })
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {

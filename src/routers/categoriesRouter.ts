@@ -18,6 +18,13 @@ router.post('/', isLoggedIn, isAdmin, categoryValidation, runValidation, control
 //DELETE --> delete a single category by ID
 router.delete('/:id', isLoggedIn, isAdmin, controller.deleteCategory)
 //PUT --> update a single category by ID
-router.put('/:id', isLoggedIn, isAdmin, categoryValidation, runValidation, controller.updateCategory)
+router.put(
+  '/:id',
+  isLoggedIn,
+  isAdmin,
+  categoryValidation,
+  runValidation,
+  controller.updateCategory
+)
 
 export default router

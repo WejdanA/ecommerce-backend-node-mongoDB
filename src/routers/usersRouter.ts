@@ -10,7 +10,7 @@ import * as validation from '../validation/userValidation'
 const router = express.Router()
 
 //GET --> get all users
-router.get('/', isLoggedIn, isAdmin, controller.getAllUsers)
+router.get('/', controller.getAllUsers)
 //GET --> get a single user by ID
 router.get('/profile', isLoggedIn, controller.getSingleUser)
 //POST --> register a user

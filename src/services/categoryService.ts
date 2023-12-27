@@ -14,9 +14,9 @@ export const findAllCategories = async (page: number, limit: number, search: str
   }
   const skip = (page - 1) * limit
 
-  const allCategoriesOnPage: ICategory[] = await Category.find().skip(skip).limit(limit)
+  const allCategories: ICategory[] = await Category.find().skip(skip).limit(limit)
   return {
-    allCategoriesOnPage,
+    allCategories,
     totalPage,
     currentPage: page,
   }
@@ -49,7 +49,11 @@ export const findIfCategoryExist = async (newInput: ICategory, next: NextFunctio
   return categoryExist
 }
 // find and update category by id
-export const findAndUpdateCategory = async (id: string, next: NextFunction, updatedProduct: Request) => {
+export const findAndUpdateCategory = async (
+  id: string,
+  next: NextFunction,
+  updatedProduct: Request
+) => {
   const categoryUpdated = await Category.findOneAndUpdate({ _id: id }, updatedProduct, {
     new: true,
   })

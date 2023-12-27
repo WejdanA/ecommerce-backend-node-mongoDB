@@ -3,6 +3,7 @@ import { NextFunction, Request } from 'express'
 import ApiError from '../errors/ApiError'
 import { IProduct, Product } from '../models/product'
 import { deleteImage } from '../helper/deleteImageHelper'
+import { SortOrder } from 'mongoose'
 
 // return all products using pagination
 export const findAllProducts = async (request: Request) => {
@@ -44,7 +45,7 @@ export const findAllProducts = async (request: Request) => {
         priceFilter = { $gte: 200, $lte: 399 }
         break
       case 'range4':
-        priceFilter = { $gte: 400, $lte: 699 }
+        priceFilter = { $gte: 400, $lte: 999 }
         break
       case 'range5':
         priceFilter = { $gte: 1000, $lte: Number.MAX_SAFE_INTEGER }
@@ -56,15 +57,16 @@ export const findAllProducts = async (request: Request) => {
 
   //sort http://localhost:5050/products?sortName=name&sortNum=1
   //http://localhost:5050/products?sortName=createAt&sortNum=1
-  sortNum ? -1 : 1
+
   sortOption[sortName] = sortNum
   //how many have products
-  const countPage = await Product.countDocuments()
+  const countPage = await Product.countDocuments({ $and: [searchFilter, { price: priceFilter }] })
+  console.log('limit', limit, 'page', page)
 
   //total page
-  const totalPage = limit ? Math.ceil(countPage / limit) : 1
-  if (page > totalPage) {
-    page = totalPage
+  const totalPages = (limit ? Math.ceil(countPage / limit) : 1) | 1
+  if (page > totalPages) {
+    page = totalPages
   }
   const skip = (page - 1) * limit
 
@@ -78,17 +80,16 @@ export const findAllProducts = async (request: Request) => {
     .populate('categories')
     .skip(skip)
     .limit(limit)
-    .sort(sortOption)
 
   return {
     allProducts,
-    totalPage,
+    totalPages,
     currentPage: page,
   }
 }
-// find order by id
+// find product by id
 export const findProductById = async (id: string, next: NextFunction) => {
-  const singleProduct = await Product.findOne({ _id: id })
+  const singleProduct = await Product.findOne({ _id: id }).populate('categories')
   if (!singleProduct) {
     throw ApiError.badRequest(404, `Product is not found with this id: ${id}`)
   }
@@ -127,7 +128,7 @@ export const findAndUpdateProduct = async (
   const productUpdated = await Product.findByIdAndUpdate(id, updatedProduct, {
     new: true,
     runValidators: true,
-  })
+  }).populate('categories')
 
   if (!productUpdated) {
     throw ApiError.badRequest(404, `Product is not found with this id: ${id}`)

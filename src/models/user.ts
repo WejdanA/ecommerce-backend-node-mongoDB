@@ -1,8 +1,6 @@
 import mongoose, { Document } from 'mongoose'
 import bcrypt from 'bcrypt'
 
-import { IOrder } from './order'
-
 export interface IUser extends Document {
   firstName: string
   lastName: string
